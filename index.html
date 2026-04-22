@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UB Note — Your Notes, Everywhere</title>
+  <meta name="description" content="UB Note is a modern, cross-platform notes app with real-time cloud sync and offline support. Available on Web, Windows, and Android." />
+  <link rel="icon" type="image/png" href="logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg-primary: #08080a;
+      --bg-secondary: #111114;
+      --bg-card: #16161a;
+      --bg-card-hover: #1c1c21;
+      --text-primary: #f5f5f7;
+      --text-secondary: #98989d;
+      --text-tertiary: #636366;
+      --accent: #e8a838;
+      --accent-hover: #f0b848;
+      --accent-light: rgba(232, 168, 56, 0.1);
+      --accent-glow: rgba(232, 168, 56, 0.2);
+      --accent-glow-strong: rgba(232, 168, 56, 0.35);
+      --border: #222228;
+      --border-light: #2a2a30;
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --radius-xl: 32px;
+      --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+
+    /* ===== NAVIGATION ===== */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.4s ease, backdrop-filter 0.4s ease;
+    }
+
+    .nav.scrolled {
+      background: rgba(8, 8, 10, 0.85);
+      backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      object-fit: contain;
+    }
+
+    .nav-name {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .nav-name span { color: var(--accent); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: color var(--transition);
+      position: relative;
+    }
+
+    .nav-links a:hover { color: var(--text-primary); }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--accent);
+      border-radius: 1px;
+      transition: width var(--transition);
+    }
+
+    .nav-links a:hover::after { width: 100%; }
+
+    .nav-cta {
+      padding: 8px 20px;
+      border-radius: 20px;
+      background: var(--accent);
+      color: #111;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+      transition: all var(--transition);
+    }
+
+    .nav-cta:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px var(--accent-glow);
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    /* ===== HERO ===== */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding: 120px 32px 80px;
+      overflow: hidden;
+    }
+
+    /* Background effects */
+    .hero-bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(232, 168, 56, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(232, 168, 56, 0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+      -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+    }
+
+    .hero-glow {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    .hero-glow-1 {
+      background: radial-gradient(circle, rgba(232, 168, 56, 0.3), transparent 70%);
+      top: -200px;
+      right: -100px;
+      animation: glowFloat1 10s ease-in-out infinite;
+    }
+
+    .hero-glow-2 {
+      background: radial-gradient(circle, rgba(232, 168, 56, 0.15), transparent 70%);
+      bottom: -200px;
+      left: -100px;
+      animation: glowFloat2 12s ease-in-out infinite;
+    }
+
+    .hero-glow-3 {
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(200, 140, 30, 0.2), transparent 70%);
+      top: 40%;
+      left: 30%;
+      animation: glowFloat3 14s ease-in-out infinite;
+    }
+
+    @keyframes glowFloat1 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(-40px, 50px) scale(1.15); }
+    }
+    @keyframes glowFloat2 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(50px, -40px) scale(1.1); }
+    }
+    @keyframes glowFloat3 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(-30px, -40px) scale(1.2); }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 800px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 24px;
+      background: var(--accent-light);
+      border: 1px solid rgba(232, 168, 56, 0.15);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      animation: fadeInDown 0.8s ease;
+    }
+
+    .hero-badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.3); }
+    }
+
+    .hero-title {
+      font-size: clamp(42px, 7vw, 80px);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -2px;
+      margin-bottom: 24px;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    .hero-title-gradient {
+      background: linear-gradient(135deg, var(--accent) 0%, #f0c860 40%, var(--accent) 80%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientShift 4s ease infinite;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% center; }
+      50% { background-position: 100% center; }
+    }
+
+    .hero-subtitle {
+      font-size: clamp(16px, 2.2vw, 20px);
+      color: var(--text-secondary);
+      line-height: 1.6;
+      max-width: 560px;
+      margin: 0 auto 40px;
+      font-weight: 400;
+      animation: fadeInUp 0.8s ease 0.15s both;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      animation: fadeInUp 0.8s ease 0.3s both;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 32px;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      transition: all var(--transition);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #d4952e);
+      color: #111;
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px var(--accent-glow-strong);
+    }
+
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .btn-icon {
+      font-size: 18px;
+      display: flex;
+    }
+
+    .hero-platforms {
+      margin-top: 48px;
+      animation: fadeInUp 0.8s ease 0.45s both;
+    }
+
+    .hero-platforms-label {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 16px;
+    }
+
+    .hero-platform-icons {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+    }
+
+    .platform-icon {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-tertiary);
+      transition: color var(--transition);
+    }
+
+    .platform-icon:hover { color: var(--accent); }
+
+    .platform-icon svg { width: 28px; height: 28px; }
+    .platform-icon span { font-size: 11px; font-weight: 500; }
+
+    /* ===== PREVIEW SECTION ===== */
+    .preview {
+      padding: 40px 32px 100px;
+      position: relative;
+    }
+
+    .preview-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .preview-frame {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.5),
+        0 0 80px var(--accent-glow);
+      animation: floatUp 0.8s ease;
+    }
+
+    .preview-titlebar {
+      display: flex;
+      align-items: center;
+      padding: 10px 16px;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      gap: 8px;
+    }
+
+    .preview-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .preview-dot.red { background: #ff5f57; }
+    .preview-dot.yellow { background: #ffbd2e; }
+    .preview-dot.green { background: #28c940; }
+
+    .preview-img {
+      width: 100%;
+      display: block;
+    }
+
+    /* ===== FEATURES ===== */
+    .features {
+      padding: 120px 32px;
+      position: relative;
+    }
+
+    .section-header {
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto 64px;
+    }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -1px;
+      margin-bottom: 16px;
+    }
+
+    .section-desc {
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .features-grid {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 32px 28px;
+      transition: all var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
+
+    .feature-card:hover {
+      border-color: rgba(232, 168, 56, 0.2);
+      background: var(--bg-card-hover);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .feature-card:hover::before { opacity: 1; }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: var(--accent-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(232, 168, 56, 0.1);
+    }
+
+    .feature-title {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: -0.3px;
+    }
+
+    .feature-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* ===== PLATFORMS ===== */
+    .platforms {
+      padding: 120px 32px;
+      position: relative;
+    }
+
+    .platforms-grid {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .platform-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 40px 32px;
+      text-align: center;
+      transition: all var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .platform-card:hover {
+      border-color: rgba(232, 168, 56, 0.25);
+      transform: translateY(-6px);
+      box-shadow: 0 16px 50px rgba(0, 0, 0, 0.35);
+    }
+
+    .platform-card-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--accent-light), rgba(232, 168, 56, 0.05));
+      border: 1px solid rgba(232, 168, 56, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 28px;
+    }
+
+    .platform-card-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -0.3px;
+    }
+
+    .platform-card-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .platform-card-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      transition: all var(--transition);
+    }
+
+    .platform-card-btn:hover {
+      border-color: var(--accent);
+      background: var(--accent-light);
+      color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .platform-card-btn svg { width: 16px; height: 16px; }
+
+    .platform-card-size {
+      display: block;
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+
+    /* ===== SHOWCASE ===== */
+    .showcase {
+      padding: 80px 32px 120px;
+    }
+
+    .showcase-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+
+    .showcase-text h2 {
+      font-size: clamp(28px, 3.5vw, 40px);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -1px;
+      margin-bottom: 20px;
+    }
+
+    .showcase-text h2 span { color: var(--accent); }
+
+    .showcase-text p {
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 24px;
+    }
+
+    .showcase-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .showcase-list li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 15px;
+      color: var(--text-secondary);
+    }
+
+    .showcase-list-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      background: var(--accent-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--accent);
+      font-size: 12px;
+    }
+
+    .showcase-img-wrap {
+      position: relative;
+    }
+
+    .showcase-img-wrap img {
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: 0 16px 50px rgba(0, 0, 0, 0.4);
+    }
+
+    .showcase-img-glow {
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--accent-glow), transparent 70%);
+      filter: blur(60px);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: -1;
+    }
+
+    /* ===== CTA SECTION ===== */
+    .cta {
+      padding: 120px 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-container {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .cta-glow {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(232, 168, 56, 0.12), transparent 70%);
+      filter: blur(80px);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .cta h2 {
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -1.5px;
+      margin-bottom: 20px;
+    }
+
+    .cta p {
+      font-size: 18px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 40px;
+    }
+
+    .cta .hero-actions { margin-bottom: 0; }
+
+    /* ===== FOOTER ===== */
+    .footer {
+      padding: 48px 32px;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .footer-logo {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+    }
+
+    .footer-name {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .footer-copy {
+      font-size: 13px;
+      color: var(--text-tertiary);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .footer-links a {
+      font-size: 13px;
+      color: var(--text-tertiary);
+      transition: color var(--transition);
+    }
+
+    .footer-links a:hover { color: var(--accent); }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes floatUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 900px) {
+      .features-grid, .platforms-grid { grid-template-columns: 1fr 1fr; }
+      .showcase-container { grid-template-columns: 1fr; gap: 40px; }
+      .showcase-img-wrap { order: -1; }
+    }
+
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .mobile-menu-btn { display: block; }
+      .features-grid, .platforms-grid { grid-template-columns: 1fr; }
+      .hero { padding: 100px 20px 60px; }
+      .hero-title { letter-spacing: -1px; }
+      .features, .platforms, .showcase, .cta { padding: 80px 20px; }
+      .preview { padding: 20px 16px 80px; }
+      .btn { padding: 12px 24px; font-size: 14px; }
+      .footer-container { flex-direction: column; text-align: center; }
+    }
+
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
+  </style>
+</head>
+<body>
+
+  <!-- ===== NAVIGATION ===== -->
+  <nav class="nav" id="nav">
+    <a href="#" class="nav-brand">
+      <img src="logo.png" alt="UB Note" class="nav-logo" />
+      <div class="nav-name">UB <span>Note</span></div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#platforms">Platforms</a></li>
+      <li><a href="#download">Download</a></li>
+    </ul>
+    <a href="#download" class="nav-cta">Get Started</a>
+    <button class="mobile-menu-btn" onclick="document.getElementById('download').scrollIntoView({behavior:'smooth'})">☰</button>
+  </nav>
+
+  <!-- ===== HERO ===== -->
+  <section class="hero" id="hero">
+    <div class="hero-bg-grid"></div>
+    <div class="hero-glow hero-glow-1"></div>
+    <div class="hero-glow hero-glow-2"></div>
+    <div class="hero-glow hero-glow-3"></div>
+
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="hero-badge-dot"></span>
+        Now available on Desktop
+      </div>
+
+      <h1 class="hero-title">
+        Your Notes,<br />
+        <span class="hero-title-gradient">Everywhere.</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        A beautiful, cross-platform notes app with real-time cloud sync and offline support. 
+        Take notes, create checklists, and stay organized — on any device.
+      </p>
+
+      <div class="hero-actions">
+        <a href="#download" class="btn btn-primary">
+          <span class="btn-icon">⬇</span>
+          Download Now
+        </a>
+        <a href="#" class="btn btn-secondary" id="webAppBtn">
+          <span class="btn-icon">🌐</span>
+          Open Web App
+        </a>
+      </div>
+
+      <div class="hero-platforms">
+        <div class="hero-platforms-label">Available on</div>
+        <div class="hero-platform-icons">
+          <div class="platform-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.548V11.5h8.5V3.06L3 5.548zM3 18.452L11.5 20.94V12.5H3v5.952zM12.5 21.06L21 18.547V12.5h-8.5v8.56zM12.5 3.06V11.5H21V5.453L12.5 3.06z"/></svg>
+            <span>Windows</span>
+          </div>
+          <div class="platform-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 2c.127.004.249.016.371.038.244.044.484.117.714.217.459.2.87.503 1.206.895.336.392.587.849.735 1.343.074.248.124.503.149.762l.008.138v.106c0 .14-.006.279-.019.417a4.891 4.891 0 01-.148.762 4.012 4.012 0 01-.735 1.343c-.336.392-.747.695-1.206.895-.23.1-.47.173-.714.217a3.89 3.89 0 01-.371.038h-.023l-.348-.002H6.858l-.348.002h-.023a3.89 3.89 0 01-.371-.038 3.252 3.252 0 01-.714-.217 3.104 3.104 0 01-1.206-.895A4.012 4.012 0 013.46 6.678a4.891 4.891 0 01-.148-.762A4.068 4.068 0 013.293 5.5v-.106l.008-.138a3.67 3.67 0 01.149-.762 4.012 4.012 0 01.735-1.343c.336-.392.747-.695 1.206-.895.23-.1.47-.173.714-.217A3.89 3.89 0 016.476 2h.024l.358.002h10.307L17.523 2zM6.858 16.998l-.348.002h-.023a3.89 3.89 0 01-.371-.038 3.252 3.252 0 01-.714-.217 3.104 3.104 0 01-1.206-.895 4.012 4.012 0 01-.735-1.343 4.891 4.891 0 01-.148-.762A4.068 4.068 0 013.293 13.5v9h17.414v-9c0 .14-.006.279-.019.417a4.891 4.891 0 01-.148.762 4.012 4.012 0 01-.735 1.343c-.336.392-.747.695-1.206.895-.23.1-.47.173-.714.217a3.89 3.89 0 01-.371.038h-.023l-.348-.002H6.858z"/><path d="M12 10a2 2 0 110 4 2 2 0 010-4z"/></svg>
+            <span>Android</span>
+          </div>
+          <div class="platform-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 17.93A8.006 8.006 0 014.07 13H8v-2H4.07A8.006 8.006 0 0111 4.07V8h2V4.07A8.006 8.006 0 0119.93 11H16v2h3.93A8.006 8.006 0 0113 19.93V16h-2v3.93z"/></svg>
+            <span>Web</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PREVIEW ===== -->
+  <section class="preview">
+    <div class="preview-container reveal">
+      <div class="preview-frame">
+        <div class="preview-titlebar">
+          <div class="preview-dot red"></div>
+          <div class="preview-dot yellow"></div>
+          <div class="preview-dot green"></div>
+        </div>
+        <img src="desktop-preview.png" alt="UB Note Desktop Preview" class="preview-img" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FEATURES ===== -->
+  <section class="features" id="features">
+    <div class="section-header reveal">
+      <div class="section-label">Features</div>
+      <h2 class="section-title">Everything you need,<br />nothing you don't.</h2>
+      <p class="section-desc">Built for simplicity and speed. UB Note gives you the tools to capture your thoughts instantly.</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon">☁️</div>
+        <div class="feature-title">Real-Time Cloud Sync</div>
+        <div class="feature-desc">Your notes sync across all devices in real-time. Start on your phone, finish on your desktop.</div>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">📴</div>
+        <div class="feature-title">Offline First</div>
+        <div class="feature-desc">No internet? No problem. Create and edit notes offline. They sync automatically when you're back online.</div>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">📝</div>
+        <div class="feature-title">Multiple Note Types</div>
+        <div class="feature-desc">Text notes, checklists with checkboxes, and option selectors — all in one app. Pick what works best.</div>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">🌙</div>
+        <div class="feature-title">Dark & Light Themes</div>
+        <div class="feature-desc">Easy on the eyes with a stunning dark mode by default. Switch to light mode with a single click.</div>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">🔒</div>
+        <div class="feature-title">Secure & Private</div>
+        <div class="feature-desc">Firebase Authentication keeps your account safe. Your notes are private and accessible only by you.</div>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-title">Blazing Fast</div>
+        <div class="feature-desc">Built with React and optimized for speed. Instant loading, smooth animations, zero lag.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PLATFORMS / DOWNLOAD ===== -->
+  <section class="platforms" id="platforms">
+    <div class="section-header reveal">
+      <div class="section-label">Download</div>
+      <h2 class="section-title" id="download">Get UB Note on<br />your platform.</h2>
+      <p class="section-desc">Available as a native desktop app, Android app, or directly in your browser. Pick your platform.</p>
+    </div>
+
+    <div class="platforms-grid">
+      <div class="platform-card reveal">
+        <div class="platform-card-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.548V11.5h8.5V3.06L3 5.548zM3 18.452L11.5 20.94V12.5H3v5.952zM12.5 21.06L21 18.547V12.5h-8.5v8.56zM12.5 3.06V11.5H21V5.453L12.5 3.06z" fill="var(--accent)"/></svg>
+        </div>
+        <div class="platform-card-title">Windows</div>
+        <div class="platform-card-desc">Native desktop app with offline support, system tray, and auto-sync. Windows 10 and above.</div>
+        <a href="#" class="platform-card-btn" id="downloadWin">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Download .exe
+        </a>
+        <span class="platform-card-size">Installer — 113 MB &nbsp;|&nbsp; Portable available</span>
+      </div>
+
+      <div class="platform-card reveal">
+        <div class="platform-card-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="var(--accent)"><path d="M17.6 11.48a1 1 0 01-.1-.08 8.08 8.08 0 00-3.39-2.26l.32-.67a.52.52 0 00-.09-.56.5.5 0 00-.54-.13l-.09.04-.09.05-.02.02-.38.81A8.2 8.2 0 0012 8.5c-.5 0-1 .05-1.46.15l-.4-.84-.01-.02-.09-.05-.09-.04a.5.5 0 00-.54.13.52.52 0 00-.09.56l.33.69A7.93 7.93 0 006.5 11.4l-.1.08A3.97 3.97 0 005 14.5v.5h14v-.5a3.97 3.97 0 00-1.4-3.02zM9 13.5a.75.75 0 110-1.5.75.75 0 010 1.5zm6 0a.75.75 0 110-1.5.75.75 0 010 1.5zM5 16v3.5c0 .83.67 1.5 1.5 1.5H8v-5H5zm11 0v5h1.5c.83 0 1.5-.67 1.5-1.5V16h-3zM3.5 11A1.5 1.5 0 002 12.5v4A1.5 1.5 0 003.5 18a1.5 1.5 0 001.5-1.5v-4A1.5 1.5 0 003.5 11zm17 0a1.5 1.5 0 00-1.5 1.5v4a1.5 1.5 0 003 0v-4a1.5 1.5 0 00-1.5-1.5zM8 16v5h3v-5H8zm5 0v5h3v-5h-3z"/></svg>
+        </div>
+        <div class="platform-card-title">Android</div>
+        <div class="platform-card-desc">Native Material Design app with real-time sync and notifications. Android 8.0 and above.</div>
+        <a href="#" class="platform-card-btn" id="downloadApk">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Download .apk
+        </a>
+        <span class="platform-card-size">APK — Direct install</span>
+      </div>
+
+      <div class="platform-card reveal">
+        <div class="platform-card-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="var(--accent)"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 17.93A8.006 8.006 0 014.07 13H8v-2H4.07A8.006 8.006 0 0111 4.07V8h2V4.07A8.006 8.006 0 0119.93 11H16v2h3.93A8.006 8.006 0 0113 19.93V16h-2v3.93z"/></svg>
+        </div>
+        <div class="platform-card-title">Web App</div>
+        <div class="platform-card-desc">No download needed. Open UB Note in any modern browser and start taking notes immediately.</div>
+        <a href="#" class="platform-card-btn" id="openWeb">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+          Open in Browser
+        </a>
+        <span class="platform-card-size">Works in Chrome, Firefox, Edge, Safari</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SHOWCASE ===== -->
+  <section class="showcase">
+    <div class="showcase-container">
+      <div class="showcase-text reveal">
+        <h2>Works offline.<br /><span>Syncs when ready.</span></h2>
+        <p>
+          UB Note is built offline-first. Your notes are stored locally on your device and
+          sync with the cloud the moment you're back online. Never lose a thought, even without internet.
+        </p>
+        <ul class="showcase-list">
+          <li>
+            <span class="showcase-list-icon">✓</span>
+            Notes saved instantly to local storage
+          </li>
+          <li>
+            <span class="showcase-list-icon">✓</span>
+            Auto-sync with Firebase when online
+          </li>
+          <li>
+            <span class="showcase-list-icon">✓</span>
+            Sync status indicators on every note
+          </li>
+          <li>
+            <span class="showcase-list-icon">✓</span>
+            Same notes on desktop, mobile, and web
+          </li>
+          <li>
+            <span class="showcase-list-icon">✓</span>
+            Conflict resolution handled automatically
+          </li>
+        </ul>
+      </div>
+      <div class="showcase-img-wrap reveal">
+        <div class="showcase-img-glow"></div>
+        <img src="mobile-preview.png" alt="UB Note Mobile" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CTA ===== -->
+  <section class="cta">
+    <div class="cta-glow"></div>
+    <div class="cta-container reveal">
+      <h2>Ready to get<br /><span class="hero-title-gradient">organized?</span></h2>
+      <p>Download UB Note for free and start capturing your thoughts today.</p>
+      <div class="hero-actions">
+        <a href="#download" class="btn btn-primary">
+          <span class="btn-icon">⬇</span>
+          Download Now
+        </a>
+        <a href="#" class="btn btn-secondary" id="webAppBtn2">
+          <span class="btn-icon">🌐</span>
+          Try in Browser
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <img src="logo.png" alt="UB Note" class="footer-logo" />
+        <span class="footer-name">UB Note</span>
+      </div>
+      <div class="footer-copy">© 2026 UB Note. All rights reserved.</div>
+      <ul class="footer-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#download">Download</a></li>
+        <li><a href="#">Privacy</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <script>
+    // ===== Navbar scroll effect =====
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 40);
+    });
+
+    // ===== Scroll reveal =====
+    const revealElements = document.querySelectorAll('.reveal');
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry, index) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => {
+            entry.target.classList.add('visible');
+          }, index * 80);
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+    revealElements.forEach(el => revealObserver.observe(el));
+
+    // ===== Smooth scroll for anchor links =====
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.querySelector(anchor.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+  </script>
+</body>
+</html>

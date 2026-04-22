@@ -886,7 +886,7 @@
           <span class="btn-icon">⬇</span>
           Download Now
         </a>
-        <a href="#" class="btn btn-secondary" id="webAppBtn">
+        <a href="https://ubnote.vercel.app/" target="_blank" class="btn btn-secondary" id="webAppBtn">
           <span class="btn-icon">🌐</span>
           Open Web App
         </a>
@@ -1009,7 +1009,7 @@
         </div>
         <div class="platform-card-title">Web App</div>
         <div class="platform-card-desc">No download needed. Open UB Note in any modern browser and start taking notes immediately.</div>
-        <a href="#" class="platform-card-btn" id="openWeb">
+        <a href="https://ubnote.vercel.app/" target="_blank" class="platform-card-btn" id="openWeb">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
           Open in Browser
         </a>
@@ -1068,7 +1068,7 @@
           <span class="btn-icon">⬇</span>
           Download Now
         </a>
-        <a href="#" class="btn btn-secondary" id="webAppBtn2">
+        <a href="https://ubnote.vercel.app/" target="_blank" class="btn btn-secondary" id="webAppBtn2">
           <span class="btn-icon">🌐</span>
           Try in Browser
         </a>
@@ -1117,11 +1117,34 @@
     // ===== Smooth scroll for anchor links =====
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       anchor.addEventListener('click', (e) => {
-        e.preventDefault();
-        const target = document.querySelector(anchor.getAttribute('href'));
-        if (target) target.scrollIntoView({ behavior: 'smooth' });
+        const href = anchor.getAttribute('href');
+        const target = document.querySelector(href);
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
       });
     });
+
+    // ===== Download links =====
+    const downloadLinks = {
+      win: 'https://github.com/useless-mca-id/desktop/releases/download/v1.0.0/UB.Note.Setup.1.0.0.exe',
+      apk: 'https://github.com/useless-mca-id/android/releases/download/v1.0.0/UB-note.apk'
+    };
+
+    // Windows download
+    const downloadWinBtn = document.getElementById('downloadWin');
+    if (downloadWinBtn) {
+      downloadWinBtn.href = downloadLinks.win;
+      downloadWinBtn.removeAttribute('onclick');
+    }
+
+    // Android download
+    const downloadApkBtn = document.getElementById('downloadApk');
+    if (downloadApkBtn) {
+      downloadApkBtn.href = downloadLinks.apk;
+      downloadApkBtn.removeAttribute('onclick');
+    }
   </script>
 </body>
 </html>
